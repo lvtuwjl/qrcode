@@ -74,63 +74,7 @@ async fn main() -> Result<(), etcd_client::Error> {
         //     }
     }
 
-    // let (tx, mut rx) = tokio::sync::mpsc::channel(100);
-    // tokio::spawn(async move {
-    //     for i in 0..10 {
-    //         // std::thread::sleep(std::time::Duration::from_secs(2));
-    //         let sd = tx.send(i).await;
-    //         println!("receiver dropped:{i} {:?}", sd);
-    //         // return;
-    //     }
-    // });
-    //
-    // while let Some(i) = rx.recv().await {
-    //     // std::thread::sleep(std::time::Duration::from_secs(2));
-    //     println!("got = {}", i);
-    // }
-
-    // server register
-    // registry::put();
-
-    // exec watch loop block
-    // registry::watch().await?;
-    // registry::lease_keep_alive().await?;
-    //
-    // std::thread::sleep(std::time::Duration::from_secs(20));
-
-    // use tokio::sync::mpsc::channel;
-    //
-    // let (request_sender, mut request_receiver) = channel::<i32>(2);
-    // let request_stream = ReceiverStream::new(request_receiver);
-
-    // let rs = request_sender.send(12).await;
-    // println!("rs:{:?}", rs);
-    //
-    // let rs1 = request_sender.send(13).await;
-    // println!("rs1:{:?}", rs1);
-    //
-    // let ss = request_receiver.recv().await;
-    //
-    // println!("ss:{:?}", ss);
-
-    // let response_stream = self.inner.watch(request_stream).await?.into_inner();
-    // let mut watch_stream = WatchStream::new(response_stream);
-
-    // let watch_id = match watch_stream.message().await? {
-    //     Some(resp) => {
-    //         assert!(resp.created(), "not a create watch response");
-    //         resp.watch_id()
-    //     }
-    //     None => {
-    //         return Err(Error::WatchError("failed to create watch".to_string()));
-    //     }
-    // };
-
-    // Ok((Watcher::new(watch_id, request_sender), watch_stream))
-
-    // use utils::time;
-    // println!("{} {} {} {}",time::secs(),time::millis(),time::micros(),time::nanos());
-    // time::sleep(3);
+    async_stream::stream! {}
 
     Ok(())
 }

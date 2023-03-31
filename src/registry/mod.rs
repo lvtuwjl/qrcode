@@ -58,12 +58,12 @@ pub async fn lease_keep_alive() -> Result<(), etcd_client::Error> {
 
     // 7587869215666571603,
     // 7587869215666571603
-    let (mut keeper, mut stream) = dc.keep_alive(0x694d87314abcfa1c, None).await?;
+    let (mut keeper, mut stream) = dc.keep_alive(0x694d87314abcfa33, None).await?;
     println!("1111:{:?}", keeper);
 
     tokio::spawn(async move {
         for i in 0..3 {
-            std::thread::sleep(std::time::Duration::from_secs(2));
+            tokio::time::sleep(std::time::Duration::from_secs(20)).await;
             let hh = keeper.keep_alive().await;
             println!("hh:{:?}", hh);
         }
@@ -72,7 +72,8 @@ pub async fn lease_keep_alive() -> Result<(), etcd_client::Error> {
     loop {
         // std::thread::sleep(std::time::Duration::from_secs(10));
         println!("1111:{:?}", "keeper");
-        let resp = stream.message().await?.unwrap();
+        let resp = stream.message().await?;
+
         println!("22:{:?}", resp);
     }
 
