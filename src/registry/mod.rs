@@ -4,6 +4,7 @@
 mod discovery;
 mod etcd;
 mod etcd1;
+pub mod pb;
 mod registry;
 mod s1;
 mod s2;
@@ -21,33 +22,59 @@ pub async fn watch() -> Result<(), etcd_client::Error> {
     loop {
         // println!("1111:{:#?}", watcher);
         let resp = stream.message().await?.unwrap();
-        println!("22:{:?}", resp);
+        println!("22:{:#?}", resp);
     }
 
     Ok(())
 }
 
-// async fn test_watch() -> Result<()> {
-//     let mut client = get_client().await?;
-//
-//     let (mut watcher, mut stream) = client.watch("watch01", None).await?;
-//
-//     client.put("watch01", "01", None).await?;
-//
-//     let resp = stream.message().await?.unwrap();
-//     assert_eq!(resp.watch_id(), watcher.watch_id());
-//     assert_eq!(resp.events().len(), 1);
-//
-//     let kv = resp.events()[0].kv().unwrap();
-//     assert_eq!(kv.key(), b"watch01");
-//     assert_eq!(kv.value(), b"01");
-//     assert_eq!(resp.events()[0].event_type(), EventType::Put);
-//
-//     watcher.cancel().await?;
-//
-//     let resp = stream.message().await?.unwrap();
-//     assert_eq!(resp.watch_id(), watcher.watch_id());
-//     assert!(resp.canceled());
-//
-//     Ok(())
-// }
+pub async fn put() -> Result<(), etcd_client::Error> {
+    let mut dc = discovery::DiscoveryClient::new();
+    dc.put("watch01", "01", None).await?;
+
+    Ok(())
+}
+
+pub async fn get() -> Result<(), etcd_client::Error> {
+    let mut dc = discovery::DiscoveryClient::new();
+    // dc.get("watch01", "01", None).await?;
+
+    // {
+    let resp = dc.get("watch01", None).await?;
+    assert_eq!(resp.count(), 1);
+    // assert!(!resp.more());
+    // assert_eq!(resp.kvs().len(), 1);
+    // assert_eq!(resp.kvs()[0].key(), b"get11");
+    // assert_eq!(resp.kvs()[0].value(), b"11");
+    // }
+
+    println!("resp:{:?}", resp);
+
+    Ok(())
+}
+
+pub async fn lease_keep_alive() -> Result<(), etcd_client::Error> {
+    let mut dc = discovery::DiscoveryClient::new();
+
+    // 7587869215666571603,
+    // 7587869215666571603
+    let (mut keeper, mut stream) = dc.keep_alive(0x694d87314abcfa1c, None).await?;
+    println!("1111:{:?}", keeper);
+
+    tokio::spawn(async move {
+        for i in 0..3 {
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            let hh = keeper.keep_alive().await;
+            println!("hh:{:?}", hh);
+        }
+    });
+
+    loop {
+        // std::thread::sleep(std::time::Duration::from_secs(10));
+        println!("1111:{:?}", "keeper");
+        let resp = stream.message().await?.unwrap();
+        println!("22:{:?}", resp);
+    }
+
+    Ok(())
+}

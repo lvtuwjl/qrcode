@@ -10,6 +10,18 @@ pub struct HelloReply {
     #[prost(string, tag = "1")]
     pub message: ::prost::alloc::string::String,
 }
+/// EchoRequest is the request for echo.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct EchoRequest {
+    #[prost(string, tag = "1")]
+    pub message: ::prost::alloc::string::String,
+}
+/// EchoResponse is the response for echo.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct EchoResponse {
+    #[prost(string, tag = "1")]
+    pub message: ::prost::alloc::string::String,
+}
 /// Generated client implementations.
 pub mod greeter_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
@@ -100,6 +112,37 @@ pub mod greeter_client {
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
+        /// Sends a stream
+        ///  rpc KeepAliveHello (stream HelloRequest) returns (stream HelloReply) {}
+        /// UnaryEcho is unary echo.
+        ///  rpc UnaryEcho(EchoRequest) returns (EchoResponse) {}
+        /// ServerStreamingEcho is server side streaming.
+        ///  rpc ServerStreamingEcho(EchoRequest) returns (stream EchoResponse) {}
+        /// ClientStreamingEcho is client side streaming.
+        ///  rpc ClientStreamingEcho(stream EchoRequest) returns (EchoResponse) {}
+        /// BidirectionalStreamingEcho is bidi streaming.
+        pub async fn bidirectional_streaming_echo(
+            &mut self,
+            request: impl tonic::IntoStreamingRequest<Message = super::EchoRequest>,
+        ) -> Result<
+            tonic::Response<tonic::codec::Streaming<super::EchoResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/helloworld.Greeter/BidirectionalStreamingEcho",
+            );
+            self.inner.streaming(request.into_streaming_request(), path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -114,6 +157,28 @@ pub mod greeter_server {
             &self,
             request: tonic::Request<super::HelloRequest>,
         ) -> Result<tonic::Response<super::HelloReply>, tonic::Status>;
+        /// Server streaming response type for the BidirectionalStreamingEcho method.
+        type BidirectionalStreamingEchoStream: futures_core::Stream<
+                Item = Result<super::EchoResponse, tonic::Status>,
+            >
+            + Send
+            + 'static;
+        /// Sends a stream
+        ///  rpc KeepAliveHello (stream HelloRequest) returns (stream HelloReply) {}
+        /// UnaryEcho is unary echo.
+        ///  rpc UnaryEcho(EchoRequest) returns (EchoResponse) {}
+        /// ServerStreamingEcho is server side streaming.
+        ///  rpc ServerStreamingEcho(EchoRequest) returns (stream EchoResponse) {}
+        /// ClientStreamingEcho is client side streaming.
+        ///  rpc ClientStreamingEcho(stream EchoRequest) returns (EchoResponse) {}
+        /// BidirectionalStreamingEcho is bidi streaming.
+        async fn bidirectional_streaming_echo(
+            &self,
+            request: tonic::Request<tonic::Streaming<super::EchoRequest>>,
+        ) -> Result<
+            tonic::Response<Self::BidirectionalStreamingEchoStream>,
+            tonic::Status,
+        >;
     }
     /// The greeting service definition.
     #[derive(Debug)]
@@ -207,6 +272,45 @@ pub mod greeter_server {
                                 send_compression_encodings,
                             );
                         let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/helloworld.Greeter/BidirectionalStreamingEcho" => {
+                    #[allow(non_camel_case_types)]
+                    struct BidirectionalStreamingEchoSvc<T: Greeter>(pub Arc<T>);
+                    impl<T: Greeter> tonic::server::StreamingService<super::EchoRequest>
+                    for BidirectionalStreamingEchoSvc<T> {
+                        type Response = super::EchoResponse;
+                        type ResponseStream = T::BidirectionalStreamingEchoStream;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::ResponseStream>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<tonic::Streaming<super::EchoRequest>>,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move {
+                                (*inner).bidirectional_streaming_echo(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = BidirectionalStreamingEchoSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.streaming(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)
